@@ -58,15 +58,20 @@ public class ProductControllerTest {
 	
 	@Test
 	public void shouldReturnProductInfoResponse() throws JsonProcessingException{
-		ProductInfo productInfo = new ProductInfo();
-		productInfo.setId("1");
-		productInfo.setDescription("Una heladera");
-		productInfo.setName("Heladera");
-		productInfo.setPrice(100F);
-		productInfo.setStock(10);
-		productInfo.setUsed(true);
-		productInfo.setListPrice(78F);
+		ProductInfo productInfo = setProductInfo();
 		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(productInfo);
+		ReviewResponse reviewResponse = setReviewResponse();
+		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
+		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		String jsonString = objectMapper.writeValueAsString(productInfoResponse);
+		System.out.println(jsonString);
+		
+		Assert.assertEquals(productInfoResponse.getId(), "1");
+	}
+
+	private ReviewResponse setReviewResponse() {
 		ProductReview productReview = new ProductReview();
 		productReview.setId("1");
 		productReview.setReview("Buenisimo");
@@ -80,14 +85,19 @@ public class ProductControllerTest {
 		ReviewResponse reviewResponse = new ReviewResponse();
 		reviewResponse.setItems(reviews);
 		reviewResponse.setPaging(pagingInfo);
-		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
-		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
+		return reviewResponse;
+	}
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		String jsonString = objectMapper.writeValueAsString(productInfoResponse);
-		System.out.println(jsonString);
-		
-		Assert.assertEquals(productInfoResponse.getId(), "1");
+	private ProductInfo setProductInfo() {
+		ProductInfo productInfo = new ProductInfo();
+		productInfo.setId("1");
+		productInfo.setDescription("Una heladera");
+		productInfo.setName("Heladera");
+		productInfo.setPrice(100F);
+		productInfo.setStock(10);
+		productInfo.setUsed(true);
+		productInfo.setListPrice(78F);
+		return productInfo;
 	}
 	
 }
