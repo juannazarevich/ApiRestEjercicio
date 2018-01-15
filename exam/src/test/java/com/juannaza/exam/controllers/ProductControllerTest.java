@@ -4,23 +4,30 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.juannaza.exam.model.PagingInfo;
 import com.juannaza.exam.model.ProductInfo;
+import com.juannaza.exam.model.ProductInfoResponse;
+import com.juannaza.exam.model.ProductReview;
+import com.juannaza.exam.model.ReviewResponse;
 import com.juannaza.exam.repositories.impl.ProductRepositoryImpl;
 
 @RunWith(PowerMockRunner.class)
@@ -36,7 +43,10 @@ public class ProductControllerTest {
 	ProductRepositoryImpl productRepositoryImpl;
 	
 	@Mock
-	ResponseEntity<ProductInfo> response;
+	ResponseEntity<ProductInfo> responseProduct;
+	
+	@Mock
+	ResponseEntity<ReviewResponse> responseReview;
 	
 	@Mock
 	RestTemplate restTemplate;
@@ -47,14 +57,37 @@ public class ProductControllerTest {
 	}
 	
 	@Test
-	public void test(){
-		productController.getProductInfo("1");
+	public void shouldReturnProductInfoResponse() throws JsonProcessingException{
 		ProductInfo productInfo = new ProductInfo();
 		productInfo.setId("1");
-		//Mockito.when(restTemplate.getForEntity(Matchers.anyString(),Matchers.eq(ProductInfo.class), Matchers.<Object>anyVararg())).thenReturn(response);
-		when(restTemplate.getForEntity(anyString(),eq(ProductInfo.class))).thenReturn(response);
-		//Mockito.doReturn(response).when(restTemplate).getForEntity(Matchers.anyString(), Matchers.eq(ProductInfo.class));
-		when(response.getBody()).thenReturn(productInfo);
+		productInfo.setDescription("Una heladera");
+		productInfo.setName("Heladera");
+		productInfo.setPrice(100F);
+		productInfo.setStock(10);
+		productInfo.setUsed(true);
+		productInfo.setListPrice(78F);
+		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(productInfo);
+		ProductReview productReview = new ProductReview();
+		productReview.setId("1");
+		productReview.setReview("Buenisimo");
+		productReview.setUser("elepe");
+		List<ProductReview> reviews = new ArrayList<>();
+		reviews.add(productReview);
+		PagingInfo pagingInfo = new PagingInfo();
+		pagingInfo.setLimit(1);
+		pagingInfo.setOffset(0);
+		pagingInfo.setTotal(10);
+		ReviewResponse reviewResponse = new ReviewResponse();
+		reviewResponse.setItems(reviews);
+		reviewResponse.setPaging(pagingInfo);
+		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
+		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		String jsonString = objectMapper.writeValueAsString(productInfoResponse);
+		System.out.println(jsonString);
+		
+		Assert.assertEquals(productInfoResponse.getId(), "1");
 	}
 	
 }

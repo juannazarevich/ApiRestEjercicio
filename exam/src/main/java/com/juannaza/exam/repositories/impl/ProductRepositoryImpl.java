@@ -20,9 +20,9 @@ public class ProductRepositoryImpl implements ProductRepository {
 	
 	@Override
 	public ProductInfoResponse getProductInfo(String id) {
-		//ResponseEntity<ProductInfo> result= restTemplate.getForEntity("api.testingapi.com/legacy/product/" + id, ProductInfo.class);
-		ResponseEntity<ProductInfo> result= restTemplate.getForEntity(url, ProductInfo.class);
-		ProductInfo productInfo = result.getBody();
+		ProductInfo productInfo= restTemplate.getForObject("api.testingapi.com/legacy/product/" + id, ProductInfo.class);
+		//ResponseEntity<ProductInfo> result= restTemplate.getForEntity(url, ProductInfo.class);
+		//ProductInfo productInfo = result.getBody();
 
 		ReviewResponse reviewResponse;
 		
