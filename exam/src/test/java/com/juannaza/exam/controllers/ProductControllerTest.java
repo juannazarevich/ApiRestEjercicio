@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,6 +24,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.juannaza.exam.exceptions.CommunicationException;
+import com.juannaza.exam.exceptions.ResourceNotFoundException;
 import com.juannaza.exam.model.PagingInfo;
 import com.juannaza.exam.model.ProductInfo;
 import com.juannaza.exam.model.ProductInfoResponse;
@@ -98,6 +101,20 @@ public class ProductControllerTest {
 		productInfo.setUsed(true);
 		productInfo.setListPrice(78F);
 		return productInfo;
+	}
+	
+	@Test(expected = ResourceNotFoundException.class)
+	public void exceptionWhenResourceNotFound(){
+		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(null);
+		ReviewResponse reviewResponse = setReviewResponse();
+		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
+		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
+	}
+	
+	@Ignore
+	@Test(expected = CommunicationException.class)
+	public void exceptionWhenCommunicationError(){
+		
 	}
 	
 }
