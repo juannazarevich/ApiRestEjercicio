@@ -14,7 +14,7 @@ import com.juannaza.exam.model.ProductInfoResponse;
 import com.juannaza.exam.model.ReviewResponse;
 import com.juannaza.exam.repositories.ProductRepository;
 
-@Repository
+@Repository("prod")
 @PropertySource(value = "classpath:application.properties")
 public class ProductRepositoryImpl implements ProductRepository {
 
@@ -22,10 +22,10 @@ public class ProductRepositoryImpl implements ProductRepository {
 	private RestTemplate restTemplate;
 	
 	@Value("${url.product}")
-	private String urlProduct = "http://api.testingapi.com/legacy/product/";
+	private String urlProduct;
 	
 	@Value("${url.review}")
-	private String urlReview = "http://api.testingapi.com/legacy/reviews/";
+	private String urlReview;
 	
 	private static final String QUERY_STRING = "?limit=1&offset=0";
 	
@@ -38,15 +38,13 @@ public class ProductRepositoryImpl implements ProductRepository {
 			throw new CommunicationException("Error de conexión al obtener productos", e);
 		}
 		
+		if (productInfo == null)throw new ResourceNotFoundException("Recurso no encontrado");
+		
 		ReviewResponse reviewResponse = new ReviewResponse();
 		try {
 			reviewResponse = restTemplate.getForObject(urlReview + id + QUERY_STRING, ReviewResponse.class);
 		} catch (Exception e) {
 			throw new CommunicationException("Error de conexión al obtener reseñas", e);
-		}
-		
-		if (productInfo == null || reviewResponse == null) {
-			throw new ResourceNotFoundException("Recurso no encontrado");
 		}
 		
 		return createProductInfoResponse(productInfo, reviewResponse);
@@ -60,7 +58,11 @@ public class ProductRepositoryImpl implements ProductRepository {
 		productInfoResponse.setDescription(productInfo.getDescription());
 		productInfoResponse.setPrice(productInfo.getPrice());
 		productInfoResponse.setListPrice(productInfo.getListPrice());
-		productInfoResponse.setReviews(reviewResponse.getItems());
+		if (reviewResponse == null) {
+			productInfoResponse.setReviews(null);
+		} else {
+			productInfoResponse.setReviews(reviewResponse.getItems());
+		}
 		return productInfoResponse;
 	}
 

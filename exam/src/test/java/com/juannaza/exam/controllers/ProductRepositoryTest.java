@@ -9,13 +9,11 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 import org.springframework.http.ResponseEntity;
@@ -35,14 +33,9 @@ import com.juannaza.exam.repositories.impl.ProductRepositoryImpl;
 
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(SpringRunner.class)
-public class ProductControllerTest {
+public class ProductRepositoryTest {
 
 	@InjectMocks
-	@Spy
-	ProductController productController;
-	
-	@InjectMocks
-	@Spy
 	ProductRepositoryImpl productRepositoryImpl;
 	
 	@Mock
@@ -65,7 +58,7 @@ public class ProductControllerTest {
 		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(productInfo);
 		ReviewResponse reviewResponse = setReviewResponse();
 		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
-		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
+		ProductInfoResponse productInfoResponse = productRepositoryImpl.getProductInfo("1");
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		String jsonString = objectMapper.writeValueAsString(productInfoResponse);
@@ -74,6 +67,22 @@ public class ProductControllerTest {
 		Assert.assertEquals(productInfoResponse.getId(), "1");
 	}
 
+	@Test(expected = ResourceNotFoundException.class)
+	public void exceptionWhenResourceNotFound(){
+		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(null);
+		ReviewResponse reviewResponse = setReviewResponse();
+		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
+		productRepositoryImpl.getProductInfo("1");
+	}
+	
+	@Test(expected = CommunicationException.class)
+	public void exceptionWhenCommunicationError(){
+		ProductInfo productInfo = setProductInfo();
+		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(productInfo);
+		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenCallRealMethod();
+		productRepositoryImpl.getProductInfo("1");
+	}
+	
 	private ReviewResponse setReviewResponse() {
 		ProductReview productReview = new ProductReview();
 		productReview.setId("1");
@@ -101,20 +110,6 @@ public class ProductControllerTest {
 		productInfo.setUsed(true);
 		productInfo.setListPrice(78F);
 		return productInfo;
-	}
-	
-	@Test(expected = ResourceNotFoundException.class)
-	public void exceptionWhenResourceNotFound(){
-		when(restTemplate.getForObject(anyString(), eq(ProductInfo.class))).thenReturn(null);
-		ReviewResponse reviewResponse = setReviewResponse();
-		when(restTemplate.getForObject(anyString(), eq(ReviewResponse.class))).thenReturn(reviewResponse);
-		ProductInfoResponse productInfoResponse = productController.getProductInfo("1");
-	}
-	
-	@Ignore
-	@Test(expected = CommunicationException.class)
-	public void exceptionWhenCommunicationError(){
-		
 	}
 	
 }

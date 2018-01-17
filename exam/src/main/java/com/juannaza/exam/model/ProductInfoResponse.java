@@ -4,14 +4,17 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 @Component
+@JsonPropertyOrder({"id","name","description","price","list_price", "reviews"})
 public class ProductInfoResponse {
 	
 	private String id;
 	private String name;
 	private String description;
 	private Float price;
-	//TODO el doc debe devolver list_price
 	private Float listPrice;
 	private List<ProductReview> reviews;
 	public String getId() {
@@ -38,6 +41,7 @@ public class ProductInfoResponse {
 	public void setPrice(Float price) {
 		this.price = price;
 	}
+	@JsonProperty("list_price")
 	public Float getListPrice() {
 		return listPrice;
 	}
